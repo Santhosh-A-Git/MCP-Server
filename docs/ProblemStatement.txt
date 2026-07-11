@@ -1,0 +1,333 @@
+# Problem Statement
+
+# Generic MCP Server for Gmail & Google Docs Integration
+
+## Overview
+
+We need to build a **generic Model Context Protocol (MCP) Server** that exposes Google Workspace capabilities to AI agents through standardized MCP tools.
+
+The primary goal is to enable AI agents to securely interact with Google services without implementing Google API integrations inside every individual agent.
+
+The server should be **agent-agnostic**, reusable, and compliant with the MCP specification so that it can be plugged into any MCP-compatible AI client (Claude Desktop, OpenAI Agents, Cursor, custom agents, etc.).
+
+---
+
+# Objectives
+
+The MCP Server should expose tools that allow AI agents to:
+
+1. Send emails using Gmail
+2. Draft emails in Gmail
+3. Append content to Google Docs
+
+The implementation should be modular so additional Google Workspace services can be added later (Calendar, Drive, Sheets, etc.).
+
+---
+
+# Core Functionalities
+
+## 1. Gmail Integration
+
+### Send Email
+
+Provide an MCP tool that sends an email from the authenticated user's Gmail account.
+
+Example capabilities:
+
+- Send to one or multiple recipients
+- CC
+- BCC
+- Subject
+- Plain text body
+- HTML body (optional)
+- Reply-To (optional)
+- Attachments (future enhancement)
+
+Example MCP Tool
+
+```
+gmail.send_email
+```
+
+Example Input
+
+```json
+{
+  "to": ["john@example.com"],
+  "cc": [],
+  "bcc": [],
+  "subject": "Project Update",
+  "body": "Hello John,\n\nHere is today's update.",
+  "isHtml": false
+}
+```
+
+Expected Result
+
+```json
+{
+  "success": true,
+  "messageId": "...",
+  "threadId": "..."
+}
+```
+
+---
+
+### Draft Email
+
+Allow AI agents to create Gmail drafts instead of immediately sending emails.
+
+Example MCP Tool
+
+```
+gmail.create_draft
+```
+
+Example Input
+
+```json
+{
+  "to": ["john@example.com"],
+  "subject": "Follow Up",
+  "body": "Hi..."
+}
+```
+
+Expected Result
+
+```json
+{
+  "success": true,
+  "draftId": "..."
+}
+```
+
+---
+
+## 2. Google Docs Integration
+
+### Append Content
+
+Provide an MCP tool that appends text to an existing Google Document.
+
+The AI agent should only need to specify:
+
+- Document ID
+- Content to append
+
+Optional enhancements:
+
+- Heading levels
+- Paragraph styles
+- Bullet lists
+- Numbered lists
+- Tables
+- Images (future)
+- Rich text formatting
+
+Example MCP Tool
+
+```
+gdocs.append_content
+```
+
+Example Input
+
+```json
+{
+  "documentId": "xxxxxxxx",
+  "content": "## Meeting Summary\n\nToday's discussion..."
+}
+```
+
+Expected Result
+
+```json
+{
+  "success": true,
+  "revisionId": "..."
+}
+```
+
+---
+
+# Authentication
+
+Use OAuth 2.0 with Google APIs.
+
+The MCP server should securely manage authentication tokens.
+
+Requirements:
+
+- OAuth Consent Flow
+- Refresh Token support
+- Automatic token refresh
+- Secure token storage
+- Multi-user support (preferred)
+
+---
+
+# Google APIs Required
+
+Gmail API
+
+Required scopes:
+
+- gmail.send
+- gmail.compose
+
+Google Docs API
+
+Required scopes:
+
+- documents
+
+---
+
+# MCP Design Goals
+
+The server should be:
+
+- Generic
+- Reusable
+- Extensible
+- Secure
+- Stateless wherever possible
+- Easy to deploy
+- Well documented
+
+It should not contain any business-specific logic.
+
+It should expose generic tools that any AI agent can call.
+
+---
+
+# Suggested Project Structure
+
+```
+mcp-google-workspace/
+
+    src/
+        gmail/
+            send_email
+            create_draft
+
+        docs/
+            append_content
+
+        auth/
+            oauth
+            token_store
+
+        server/
+
+    README.md
+
+    package.json
+
+    Dockerfile
+
+    .env.example
+```
+
+---
+
+# Non-functional Requirements
+
+## Security
+
+- OAuth 2.0
+- Secure credential storage
+- Token encryption
+- Input validation
+- Error sanitization
+
+---
+
+## Reliability
+
+- Retry transient Google API failures
+- Handle rate limiting
+- Graceful error responses
+
+---
+
+## Observability
+
+- Structured logging
+- Request IDs
+- Tool execution metrics
+- Error logging
+
+---
+
+## Documentation
+
+Include:
+
+- Installation guide
+- OAuth setup
+- Google Cloud Console configuration
+- Environment variables
+- Tool documentation
+- Sample MCP client configuration
+- Example requests/responses
+
+---
+
+# Deployment
+
+The server should be deployable via:
+
+- Docker
+- Local Node.js runtime
+- Cloud Run (preferred compatibility)
+- Kubernetes (optional)
+
+---
+
+# Future Extensibility
+
+The architecture should allow adding new MCP tools without modifying existing implementations.
+
+Potential future tools:
+
+- Gmail Search
+- Read Email
+- List Labels
+- Google Drive
+- Google Sheets
+- Google Calendar
+- Google Contacts
+- Google Tasks
+
+---
+
+# Deliverables
+
+The implementation should include:
+
+- Fully functional MCP Server
+- Gmail Send tool
+- Gmail Draft tool
+- Google Docs Append tool
+- OAuth integration
+- Complete documentation
+- Docker support
+- Example MCP configuration
+- Unit tests
+- Integration tests
+
+---
+
+# Success Criteria
+
+The project will be considered successful when:
+
+- Any MCP-compatible AI agent can connect to the server.
+- The agent can create Gmail drafts.
+- The agent can send Gmail emails.
+- The agent can append content to Google Docs.
+- Authentication is secure and reusable.
+- The server is modular and easy to extend with additional Google Workspace capabilities.
