@@ -24,10 +24,6 @@ app.get('/sse', async (req, res) => {
   });
 });
 
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', version: '1.0.0' });
-});
-
 app.post('/messages', async (req, res) => {
   if (!transport) {
     return res.status(400).send('No active SSE connection');
