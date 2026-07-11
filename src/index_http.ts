@@ -8,26 +8,35 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Need to parse JSON bodies for the /messages endpoint
-app.use(express.json());
+// Maintain a map of active SSE transports by session ID
+const transports = new Map<string, SSEServerTransport>();
 
-let transport: SSEServerTransport | null = null;
+// Note: We remove app.use(express.json()) because it consumes the request stream,
+// which causes the MCP SDK's handlePostMessage to hang (ReadTimeout).
+// The SDK is perfectly capable of parsing the incoming message stream itself.
+
 const server = setupMCPServer();
 
 app.get('/sse', async (req, res) => {
-  transport = new SSEServerTransport('/messages', res);
+  const transport = new SSEServerTransport('/messages', res);
+  // Store the transport using the auto-generated sessionId
+  transports.set(transport.sessionId, transport);
   await server.connect(transport);
   
   // Clean up when the client disconnects
   res.on('close', () => {
-    transport = null;
+    transports.delete(transport.sessionId);
   });
 });
 
 app.post('/messages', async (req, res) => {
+  const sessionId = req.query.sessionId as string;
+  const transport = transports.get(sessionId);
+  
   if (!transport) {
-    return res.status(400).send('No active SSE connection');
+    return res.status(400).send('No active SSE connection for this session');
   }
+  
   await transport.handlePostMessage(req, res);
 });
 
