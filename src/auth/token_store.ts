@@ -19,6 +19,10 @@ export interface GoogleTokens {
  */
 export async function loadSavedTokens(): Promise<GoogleTokens | null> {
   try {
+    if (process.env.GOOGLE_TOKENS_JSON) {
+      console.log('Loading tokens from GOOGLE_TOKENS_JSON environment variable');
+      return JSON.parse(process.env.GOOGLE_TOKENS_JSON) as GoogleTokens;
+    }
     const content = await fs.readFile(TOKEN_PATH, 'utf-8');
     return JSON.parse(content) as GoogleTokens;
   } catch (err: any) {
