@@ -24,11 +24,11 @@ export async function appendContent(args: AppendContentArgs) {
       throw new Error('Document body is empty or invalid.');
     }
 
-    // The end of the document is the end index of the last element in the body, minus 1.
-    const lastElement = document.body.content[document.body.content.length - 1];
-    const endIndex = (lastElement.endIndex || 2) - 1;
+    // We are deliberately setting index to 1 to prepend the newest report 
+    // to the VERY TOP of the Google Doc, rather than the bottom.
+    const insertIndex = 1;
 
-    // 2. Insert the text at the end index
+    // 2. Insert the text at the top
     const updateRes = await docs.documents.batchUpdate({
       documentId: args.documentId,
       requestBody: {
@@ -36,9 +36,9 @@ export async function appendContent(args: AppendContentArgs) {
           {
             insertText: {
               location: {
-                index: endIndex
+                index: insertIndex
               },
-              text: args.content + '\n'
+              text: args.content + '\n\n----------------------------------------\n\n'
             }
           }
         ]
